@@ -1,0 +1,35 @@
+x-environments: &ollama
+    image: ollama/ollama:latest
+    hostname: ollama
+    volumes:
+      - ${OLLAMA_MODELS}:/root/.ollama/models
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 'all'
+              capabilities: [gpu]
+services:
+  ollama:
+    <<: *ollama
+    ports:
+     - 11435:11434
+    environment:
+     - CUDA_VISIBLE_DEVICES=0
+  ollama2:
+    <<: *ollama
+    ports:
+     - 11436:11434
+    environment:
+     - CUDA_VISIBLE_DEVICES=1
+  nginx:
+   image: nginx:latest
+   restart: always
+   ports:
+     - 11434:11434
+   volumes:
+    - ./ollama.conf:/etc/nginx/conf.d/ollama.conf
+   environment:
+    - HOST_URL=${HOST_URL}

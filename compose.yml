@@ -2,7 +2,7 @@ x-environments: &ollama
     image: ollama/ollama:latest
     hostname: ollama
     volumes:
-      - ${OLLAMA_MODELS}:/root/.ollama/models
+      - ollama_models:/root/.ollama/models
     restart: always
     deploy:
       resources:
@@ -14,22 +14,25 @@ x-environments: &ollama
 services:
   ollama:
     <<: *ollama
-    ports:
-     - 11435:11434
+    container_name: ollama1
     environment:
      - CUDA_VISIBLE_DEVICES=0
+     - OLLAMA_NUM_PARALLEL=10
   ollama2:
     <<: *ollama
-    ports:
-     - 11436:11434
+    container_name: ollama2
     environment:
      - CUDA_VISIBLE_DEVICES=1
+     - OLLAMA_NUM_PARALLEL=10
   nginx:
    image: nginx:latest
    restart: always
    ports:
      - 11434:11434
+     - 11435:11435
    volumes:
     - ./ollama.conf:/etc/nginx/conf.d/ollama.conf
    environment:
     - HOST_URL=${HOST_URL}
+volumes:
+  ollama_models:
